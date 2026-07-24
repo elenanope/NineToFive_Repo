@@ -2,7 +2,7 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-public class PlayerController : MonoBehaviour
+public class PlayerController :Subject, IObserver
 {
     [SerializeField] float movementSpeed;
     public bool carriesObject;
@@ -10,11 +10,29 @@ public class PlayerController : MonoBehaviour
     float timeSinceMove;
     [SerializeField] float maxForce;
     Vector2 moveInput;
-    bool hasTurned;
     bool interacting;
-    bool canInteract;
+    bool canInteract = true;
+    bool objectInRange;
+    bool npcInRange;
     [SerializeField] float interactingCooldown;
     [SerializeField] Rigidbody playerRb;
+    [SerializeField] GameObject objectNear;
+    [SerializeField] GameObject npcNear;
+
+    [SerializeField] Subject _gameManagerSubject;
+    private void OnEnable()
+    {
+        _gameManagerSubject.AddObserver(this);
+    }
+    private void OnDisable()
+    {
+        _gameManagerSubject.RemoveObserver(this);
+    }
+
+    public void OnNotify()
+    {
+        Debug.Log("Temblor!");
+    }
 
     private void Update()
     {
@@ -30,55 +48,26 @@ public class PlayerController : MonoBehaviour
     }
     private void FixedUpdate()
     {
-        //if (!GameManager.Instance.playerInDialogue)
+        if (!GameManager.Instance.playerPaused)
         {
             Move();
         }
     }
-    /*void Interact()
+
+    void Interact()
     {
-        if (canInteract)
+        if (objectInRange || npcInRange)
         {
-            if (npcInRange)
-            {
-                DialogueManager.Instance.RegisterInfo(dialogueInfo);
-                if (anim.GetBool("isWalking")) anim.SetBool("isWalking", false);
-                playerSpeaker.Stop();
-                playerRb.linearVelocity = Vector3.zero;
-                if (objectToHold != null)
-                {
-                    if (GameManager.Instance.heldObjectMesh == null)
-                    {
-                        GameManager.Instance.heldObjectMesh = objectToHold;
-                        GameManager.Instance.heldObjectMesh.transform.parent = holdingPoint;
-                        GameManager.Instance.heldObjectMesh.transform.localPosition = new Vector3(0f, 0f, 0f);
-                        DialogueManager.Instance.dialogueMark.SetActive(false);
-                        objectToHold = null;
-                    }
-                    else
-                    {
-                        //sonido de wrong
-                    }
-                }
-                DialogueManager.Instance.DialogueCall();
-                if (!GameManager.Instance.playerInDialogue) npcInRange = false;
-            }
-            else
-            {
-                if (GameManager.Instance.heldObjectMesh != null)
-                {
-                    GameManager.Instance.heldObjectMesh.transform.parent = null;
-                    GameManager.Instance.heldObjectMesh.transform.position = new Vector3(transform.position.x, transform.position.y, transform.position.z + 1f);
-                    GameManager.Instance.heldObjectMesh = null;
-                    GameManager.Instance.heldObject = "";
-                }
-            }
+            //if (anim.GetBool("isWalking")) anim.SetBool("isWalking", false);
+            //playerSpeaker.Stop();
+            playerRb.linearVelocity = Vector3.zero;
+            NotifyObservers();
         }
-    }*/
+    }
     IEnumerator InteractRoutine()
     {
         interacting = false;
-        //if (canInteract) Interact();
+        if (canInteract) Interact();
         canInteract = false;
         yield return new WaitForSeconds(interactingCooldown);
         canInteract = true;
@@ -94,7 +83,7 @@ public class PlayerController : MonoBehaviour
         right.Normalize();
 
         Vector3 moveDirection = forward * moveInput.y + right * moveInput.x;
-        if (!hasTurned && moveDirection.sqrMagnitude > 0.001f)
+        if (moveDirection.sqrMagnitude > 0.001f)
         {
             Quaternion toRotation = Quaternion.LookRotation(moveDirection, Vector3.up);
             transform.rotation = Quaternion.Slerp(transform.rotation, toRotation, rotationTime * Time.deltaTime);
@@ -125,6 +114,60 @@ public class PlayerController : MonoBehaviour
             //if (playerSpeaker.isPlaying) playerSpeaker.Stop();
         }
         playerRb.AddForce(velocityChange, ForceMode.VelocityChange);
+    }
+    private void OnTriggerStay(Collider other)
+    {
+        if (!objectInRange)
+        {
+            if (other.gameObject.TryGetComponent<Object>(out Object soulless))
+            {
+                objectInRange = true;
+                objectNear = other.gameObject;
+                this.AddObserver(soulless);
+                GameManager.Instance.interactMark.SetActive(true);
+            }
+            if (other.gameObject.TryGetComponent<PC>(out PC pc))
+            {
+                objectInRange = true;
+                objectNear = other.gameObject;
+                this.AddObserver(pc);
+                GameManager.Instance.interactMark.SetActive(true);
+            }
+        }
+        if(!npcInRange)
+        {
+            if (other.gameObject.TryGetComponent<NPC>(out NPC soul))
+            {
+                npcInRange = true;
+                npcNear = other.gameObject;
+                this.AddObserver(soul);
+                GameManager.Instance.interactMark.SetActive(true);
+            }
+        }
+    }
+    private void OnTriggerExit(Collider other)
+    {
+        if (other.gameObject.TryGetComponent<Object>(out Object soulless))
+        {
+            objectInRange = false;
+            this.RemoveObserver(soulless);
+            objectNear = null;
+            GameManager.Instance.interactMark.SetActive(false);
+        }
+        if (other.gameObject.TryGetComponent<PC>(out PC pc))
+        {
+            objectInRange = false;
+            this.RemoveObserver(pc); 
+            objectNear = null;
+            GameManager.Instance.interactMark.SetActive(false);
+        }
+        if (other.gameObject.TryGetComponent<NPC>(out NPC soul))
+        {
+            npcInRange = false;
+            this.RemoveObserver(soul);
+            npcNear = null;
+            GameManager.Instance.interactMark.SetActive(false);
+        }
     }
     //Movement
     public void OnMove(InputAction.CallbackContext ctx)

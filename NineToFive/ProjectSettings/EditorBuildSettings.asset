@@ -6,6 +6,9 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
+    path: Assets/NineToFive_Root/Scenes/MainMenu.unity
+    guid: e3a009fee78da52428a2954447ff4c38
+  - enabled: 1
     path: Assets/NineToFive_Root/Scenes/TestScene1.unity
     guid: 99c9720ab356a0642a771bea13969a05
   m_configObjects:
