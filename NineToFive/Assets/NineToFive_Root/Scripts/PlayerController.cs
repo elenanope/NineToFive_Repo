@@ -18,8 +18,13 @@ public class PlayerController :Subject, IObserver
     [SerializeField] Rigidbody playerRb;
     [SerializeField] GameObject objectNear;
     [SerializeField] GameObject npcNear;
+    [SerializeField] Animator playerAnim;
 
     [SerializeField] Subject _gameManagerSubject;
+    private void Start()
+    {
+        playerAnim = GameManager.Instance.playerAnim;
+    }
     private void OnEnable()
     {
         _gameManagerSubject.AddObserver(this);
@@ -31,6 +36,11 @@ public class PlayerController :Subject, IObserver
 
     public void OnNotify()
     {
+        if(GameManager.Instance.beingCarried)
+        {
+            //se te cae el objeto
+            NotifyObservers();
+        }
         Debug.Log("Temblor!");
     }
 
@@ -100,16 +110,16 @@ public class PlayerController :Subject, IObserver
         if (moveInput.x != 0 || moveInput.y != 0)
         {
             timeSinceMove = 0;
-            //if (!anim.GetBool("isWalking")) anim.SetBool("isWalking", true);
+            if (!playerAnim.GetBool("isWalking")) playerAnim.SetBool("isWalking", true);
             //if (!playerSpeaker.isPlaying) playerSpeaker.Play();
         }
         else
         {
-            /*if (anim.GetBool("isWalking"))
+            if (playerAnim.GetBool("isWalking"))
             {
                 timeSinceMove = 0;
-                anim.SetBool("isWalking", false);
-            }*/
+                playerAnim.SetBool("isWalking", false);
+            }
 
             //if (playerSpeaker.isPlaying) playerSpeaker.Stop();
         }
@@ -126,7 +136,7 @@ public class PlayerController :Subject, IObserver
                 this.AddObserver(soulless);
                 GameManager.Instance.interactMark.SetActive(true);
             }
-            if (other.gameObject.TryGetComponent<PC>(out PC pc))
+            if (other.gameObject.TryGetComponent<PC>(out PC pc) && GameManager.Instance.isDay)
             {
                 objectInRange = true;
                 objectNear = other.gameObject;

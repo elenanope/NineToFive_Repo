@@ -1,4 +1,5 @@
 using System.Collections;
+using TMPro;
 using Unity.Cinemachine;
 using UnityEngine;
 using UnityEngine.UI;
@@ -24,16 +25,24 @@ public class GameManager : Subject
     [SerializeField] Color dayColor;//colores de las barras de tiempo
     [SerializeField] Color nightColor;
     [SerializeField] GameObject nightShiftPanel;
+    [SerializeField] GameObject dayShiftPanel;
+    [SerializeField] TMP_Text dayShiftText;
+    [SerializeField] TMP_Text errorsTotal;
+    [SerializeField] TMP_Text desktopsToDo;
+    [SerializeField] TMP_Text papersToDo;
+    [SerializeField] GameObject winPanel;
 
     [Header("Work Parameters")]
     public int errorsCleared = 0;
     public int desktopsCleared = 0;
+    public int paperCleared = 0;
     float timeTotal;
     float timeLeft;
     public float workTimeTotal = 120;
     public float nightTimeTotal = 180;
-    public int errorsLeft;
-    public int desktopsLeft;
+    public bool errorsToDo;
+    [SerializeField] DesktopData dailyData;
+    bool dayFulfilled;
 
     [Header("Other Parameters")]
     public bool gamePaused = false;
@@ -42,13 +51,19 @@ public class GameManager : Subject
     public GameObject interactMark;
     public Image timeCountdown;
     public Transform holdingPoint;
+    public bool beingCarried;
+    public GameObject objectCarried;
+    public Animator playerAnim;
+
     [Header("Camera Shake")]
     public CinemachineCamera playerCam;
     [SerializeField] CinemachineBasicMultiChannelPerlin camNoise;
     [SerializeField] float shakeForce = 18f;
     [SerializeField] float lastingSeconds = 1f;
     float originalForce;
-    float shakeCooldown = 3f;//sobretodo por playtest
+    float shakeCooldownMin = 7f;//sobretodo por playtest
+    float shakeCooldownMax = 17f;//sobretodo por playtest
+    float nextShake;//sobretodo por playtest
     float lastShake = 0f;
     bool canShake = true;
 
@@ -74,14 +89,45 @@ public class GameManager : Subject
     {
         if(!gamePaused)
         {
-            if (!canShake)
+            if(beingCarried && !playerAnim.GetBool("carriesObject"))
             {
-                if (lastShake < shakeCooldown) lastShake += Time.deltaTime;
+                playerAnim.SetBool("carriesObject", true);
+            }
+            else if(!beingCarried && playerAnim.GetBool("carriesObject"))
+            {
+                playerAnim.SetBool("carriesObject", false);
+            }
+            if(!isDay)
+            {
+
+                papersToDo.text = "paper:" + paperCleared + "/" + dailyData.paperNeeded[dayNumber - 1];
+                if (paperCleared>= dailyData.paperNeeded[dayNumber - 1])TimeChange();
+                if (!canShake)
+                {
+                    if(nextShake == 0f)
+                    {
+                        nextShake = Random.Range(shakeCooldownMin, shakeCooldownMax);
+                    }
+                    else
+                    {
+                        if (lastShake < nextShake) lastShake += Time.deltaTime;
+                        else
+                        {
+                            canShake = true;
+                            lastShake = 0f;
+                        }
+                    }
+                }
                 else
                 {
-                    canShake = true;
-                    lastShake = 0f;
+                    canShake = false;
+                    CameraShake();
                 }
+            }
+            else
+            {
+                errorsTotal.text = "errors:"+ errorsCleared + "/" + dailyData.errorsNeeded[dayNumber-1];
+                desktopsToDo.text = "desktop:" + desktopsCleared + "/" + dailyData.desktopsNeeded[dayNumber-1];
             }
 
             if (timeLeft > 0)
@@ -92,7 +138,7 @@ public class GameManager : Subject
             else
             {
                 timeLeft = 0;
-                NotifyObservers();
+                //NotifyObservers();
                 TimeChange();
                 GamePaused(true);
             }
@@ -106,15 +152,29 @@ public class GameManager : Subject
         isDay = !isDay;
         if(isDay)
         {
-            timeTotal = workTimeTotal;
-            timeCountdown.color = dayColor;
-            //cambiar luz/frases
+            if(dayNumber<3)
+            {
+                dayNumber++;
+                timeTotal = workTimeTotal;
+                timeCountdown.color = dayColor;
+                dayShiftPanel.SetActive(true);
+                dayShiftText.text = "Day "+ dayNumber;
+                errorsTotal.gameObject.SetActive(true);
+                desktopsToDo.gameObject.SetActive(true);
+                papersToDo.gameObject.SetActive(false);
+                //cambiar luz/frases
+            }
+            else
+            {
+                winPanel.SetActive(true);
+                //congratulations!!! you overcame your first week!
+            }
+
         }
         else
         {
-            timeTotal = nightTimeTotal;
-            timeCountdown.color = nightColor;
-            nightShiftPanel.SetActive(true);
+            CheckFulfillment();
+            
             //cambiar luz/frases
         }
         timeLeft = timeTotal;
@@ -122,6 +182,30 @@ public class GameManager : Subject
     }
     //si es de noche, la barra se rellena y se pone en otro color + cambia la iluminación
 
+    void CheckFulfillment()
+    {
+        if(errorsCleared >= dailyData.errorsNeeded[dayNumber-1] && desktopsCleared >= dailyData.desktopsNeeded[dayNumber-1])
+        {
+            Debug.Log("Well done");
+            dayFulfilled = true;
+            TimeChange();
+        }
+        else
+        {
+            dayFulfilled = false; 
+            timeTotal = nightTimeTotal;
+            timeCountdown.color = nightColor;
+            nightShiftPanel.SetActive(true);
+            errorsTotal.gameObject.SetActive(false);
+            desktopsToDo.gameObject.SetActive(false);
+            papersToDo.gameObject.SetActive(true);
+            if (dayNumber == 3)
+            {
+                shakeCooldownMin = 4f;
+                shakeCooldownMax = 10f;
+            }
+        }
+    }
     public void GamePaused(bool pause)
     {
         player.SetActive(!pause);
@@ -130,11 +214,12 @@ public class GameManager : Subject
 
     public void CameraShake()//y que notifique a listeners como el player para que se le caigan cosas o el jefe para su anim
     {
-        if(canShake) StartCoroutine(Shaking());
+        StartCoroutine(Shaking());
+
+        NotifyObservers();
     }
     IEnumerator Shaking()
     {
-        canShake = false;
         originalForce = camNoise.FrequencyGain;
         camNoise.FrequencyGain = shakeForce;
         yield return new WaitForSeconds(lastingSeconds);

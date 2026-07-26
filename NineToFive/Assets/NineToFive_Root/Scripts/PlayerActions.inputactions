@@ -15,6 +15,15 @@
                     "initialStateCheck": false
                 },
                 {
+                    "name": "Click",
+                    "type": "Button",
+                    "id": "c2e7681f-1f34-4e2f-8818-16f1be2eb289",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
                     "name": "Movement",
                     "type": "Value",
                     "id": "4a0dc6c3-157a-4603-af7e-3b4091e9407f",
@@ -33,6 +42,17 @@
                     "processors": "",
                     "groups": "",
                     "action": "Interact",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "865ffd3d-cb96-4329-8f3b-20e022f6929d",
+                    "path": "<Mouse>/leftButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Click",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -153,7 +173,7 @@
             "id": "61b8ed0e-f1d9-40ed-b495-359e1e1c6861",
             "actions": [
                 {
-                    "name": "New action",
+                    "name": "Click",
                     "type": "Button",
                     "id": "1342d66e-51ce-496a-96f3-3fc2c8b7ac3e",
                     "expectedControlType": "",
@@ -166,11 +186,11 @@
                 {
                     "name": "",
                     "id": "c7682d17-4f60-40df-98b7-ff50164a29d7",
-                    "path": "",
+                    "path": "<Mouse>/leftButton",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "New action",
+                    "action": "Click",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

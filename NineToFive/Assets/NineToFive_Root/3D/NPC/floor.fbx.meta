@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: bbcf005ceac476547936462c741877f3
+guid: af43227eefe8cba4aa7bd7638a94f051
 ModelImporter:
   serializedVersion: 22200
   internalIDToNameTable: []
@@ -7,8 +7,8 @@ ModelImporter:
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
-      name: Player
-    second: {fileID: 2100000, guid: 2bac8678583fa37498273b4ab1396a63, type: 2}
+      name: wall
+    second: {fileID: 2100000, guid: 4a7e71f6e6db1bc439e1cc5ac90fae91, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0

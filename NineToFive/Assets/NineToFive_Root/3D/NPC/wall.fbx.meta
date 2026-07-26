@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: bbcf005ceac476547936462c741877f3
+guid: 02ccf4a7072d14840872a667f26900e6
 ModelImporter:
   serializedVersion: 22200
   internalIDToNameTable: []
@@ -7,8 +7,13 @@ ModelImporter:
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
-      name: Player
-    second: {fileID: 2100000, guid: 2bac8678583fa37498273b4ab1396a63, type: 2}
+      name: Material
+    second: {fileID: 2100000, guid: 02cab6e43ae2c294e912cca8340cf405, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: black
+    second: {fileID: 2100000, guid: 2e609f078227d5c438a023a456668740, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0

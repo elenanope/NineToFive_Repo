@@ -1,3 +1,4 @@
+using System.Collections;
 using TMPro;
 using UnityEngine;
 using UnityEngine.LightTransport;
@@ -12,19 +13,32 @@ public class TextHandler : Subject
     string[] randomLetters;
     string letters = "abcdefghjklmnpqrstuvwxyz";
     [SerializeField]int totalNumbers;
-    int numbersCatched = 0;
+    [SerializeField] int numbersCatched = 0;
     bool lettersReady;
     bool numbersReady;
+    [SerializeField] int times= 1;
+    int day= 1;
     private void Start()
     {
         totalNumbers = randomNumbersUI.Length;
         CreateRandomNumbers();
         CreateRandomLetters();
     }
+    private void Update()
+    {
+
+        if (day != GameManager.Instance.dayNumber)
+        {
+            day = GameManager.Instance.dayNumber;
+            GameManager.Instance.errorsCleared = 0;
+            NewErrors();
+        }
+    }
     private void FixedUpdate()
     {
         if(numbersReady && lettersReady)
         {
+            GameManager.Instance.errorsToDo = true;
             NotifyObservers();//HACERLO ASYNC EN EL START?!
         }
     }
@@ -81,7 +95,11 @@ public class TextHandler : Subject
     public void CatchedNumber()
     {
         numbersCatched++;
-        if(totalNumbers == numbersCatched) CloseWindow();
+        if(totalNumbers == numbersCatched)
+        {
+            CloseWindow();
+        }
+            
     }
     void CloseWindow()
     {
@@ -89,6 +107,7 @@ public class TextHandler : Subject
         numbersPanel.SetActive(false);
         numbersReady = false;
         lettersReady = false;
+        GameManager.Instance.errorsToDo = false;
         numbersCatched = 0;
     }
 
