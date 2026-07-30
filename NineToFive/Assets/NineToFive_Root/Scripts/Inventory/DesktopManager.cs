@@ -195,15 +195,11 @@ public class DesktopManager : MonoBehaviour
         if (GameManager.Instance.dayNumber == 1) dailyLength = dailyData.day1.Length;
         else if (GameManager.Instance.dayNumber == 2) dailyLength = dailyData.day2.Length;
         else if(GameManager.Instance.dayNumber == 3) dailyLength = dailyData.day3.Length;
-        else if(GameManager.Instance.dayNumber == 4) dailyLength = dailyData.day4.Length;
-        else if(GameManager.Instance.dayNumber == 5) dailyLength = dailyData.day5.Length;
         for (int i = 0; i < dailyLength; i++)
         {
                 if (GameManager.Instance.dayNumber == 1) items[i] = new SlotClass( dailyData.day1[i].GetItem());
                 if (GameManager.Instance.dayNumber == 2) items[i] = new SlotClass(dailyData.day2[i].GetItem());
                 if (GameManager.Instance.dayNumber == 3) items[i] = new SlotClass(dailyData.day3[i].GetItem());
-                if (GameManager.Instance.dayNumber == 4) items[i] = new SlotClass(dailyData.day4[i].GetItem());
-                if (GameManager.Instance.dayNumber == 5) items[i] = new SlotClass(dailyData.day5[i].GetItem());
 
                 if (items[i].GetItem() != null)
             {

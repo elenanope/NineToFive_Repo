@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4b2976a19801a6b489487a8a4cb446d6, type: 3}
   m_Name: Folder
   m_EditorClassIdentifier: 
-  iconName: rpg.1
-  icon: {fileID: 0}
+  iconName: folder
+  icon: {fileID: -549493243, guid: 5a56f95903271da459756509563c2093, type: 3}
   isMovable: 1
   receives: 0

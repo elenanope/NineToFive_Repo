@@ -1,7 +1,6 @@
 using System.Collections;
 using TMPro;
 using UnityEngine;
-using UnityEngine.LightTransport;
 
 public class TextHandler : Subject
 {
@@ -113,6 +112,7 @@ public class TextHandler : Subject
 
     public void NewErrors()
     {
+        numbersCatched = 0;
         CreateRandomNumbers();
         CreateRandomLetters();
         numbersPanel.SetActive(true);
